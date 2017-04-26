@@ -1,26 +1,24 @@
 
 ###############################################################################################
 #																							  #
-# CMS - 2017.04.19                                                                            #
+# CMS - 2017.04.26                                                                            #
 # Hugues Aschard                                                                              #
 #																							  #
-# This software is free for academic use. 													  #
-# Please contact MTAnalytics (david.skurnik@mt-analytics.com) if you are interested in using  #
-# the software for commercial purposes. This software must not be distributed or modified 	  #
-# without prior permission of the author.											 		  #
+# This software is free for academic use. It must not be distributed or modified without 	  #
+# prior permission of the author (hugoaschard@gmail.com).	  														  #
 #																							  #
 ###############################################################################################
  
 
-MCcomp <- function(DATAMAT,myOUTCOME,myPREDICTOR,myFIXCOV,listCOVARIATES,myTEST,optionStand,optionImpute,minTotSample,sigmaMax,dweight,Tmul,verbose){
+MC  <- function(DATAMAT,myOUTCOME,myPREDICTOR,myFIXCOV,listCOVARIATES,myTEST,optionStand,optionImpute,minTotSample,sigmaMax,dweight,Tmul,verbose){
 
 		version 			= 1.0
 		# INPUT ========================================
 		# DATAMAT	     : matrix data
 		# myOUTCOME	     : outcome label
 		# myPredictor    : predictor label
-		# myFIXCOV	     : table of fixed covariates names (e.g. confounding factors)
-		# listCOVARIATES : table of candidate covariates names (that would be assessed by CMS)
+		# myFIXCOV	     : vector of label names for fixed covariates (e.g. confounding factors)
+		# listCOVARIATES : vector of label names for candidate covariates (that would be assessed by CMS)
 		# myTEST         : NA (for future dev)
 		# optionStand    : 1 to standardize of all variable (necessary if variable are not standardized already), 0 otherwise
 		# optionImpute   : 1 to impute missing values in candidate covariate, o otherwise
