@@ -1,7 +1,7 @@
 
 ###############################################################################################
 #																							  #
-# CMS - 2017.04.26                                                                            #
+# CMS - 2017.09.20                                                                            #
 # Hugues Aschard                                                                              #
 #																							  #
 # This software is free for academic use. It must not be distributed or modified without 	  #
@@ -13,7 +13,7 @@
 
 MC  <- function(DATAMAT,myOUTCOME,myPREDICTOR,myFIXCOV,listCOVARIATES,myTEST,optionStand,optionImpute,minTotSample,sigmaMax,dweight,Tmul,verbose){
 
-		version 			= 1.1
+		version 			= 1.0
 		# INPUT ========================================
 		# DATAMAT	     : matrix data
 		# myOUTCOME	     : outcome label
