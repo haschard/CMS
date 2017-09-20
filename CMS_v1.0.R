@@ -5,14 +5,15 @@
 # Hugues Aschard                                                                              #
 #																							  #
 # This software is free for academic use. It must not be distributed or modified without 	  #
-# prior permission of the author (hugoaschard@gmail.com).	  														  #
+# prior permission of the author (hugoaschard@gmail.com). Please contact the author if you    #
+# are interested in using the software for commercial purposes.	  						      #
 #																							  #
 ###############################################################################################
  
 
 MC  <- function(DATAMAT,myOUTCOME,myPREDICTOR,myFIXCOV,listCOVARIATES,myTEST,optionStand,optionImpute,minTotSample,sigmaMax,dweight,Tmul,verbose){
 
-		version 			= 1.0
+		version 			= 1.1
 		# INPUT ========================================
 		# DATAMAT	     : matrix data
 		# myOUTCOME	     : outcome label
@@ -20,7 +21,7 @@ MC  <- function(DATAMAT,myOUTCOME,myPREDICTOR,myFIXCOV,listCOVARIATES,myTEST,opt
 		# myFIXCOV	     : vector of label names for fixed covariates (e.g. confounding factors)
 		# listCOVARIATES : vector of label names for candidate covariates (that would be assessed by CMS)
 		# myTEST         : NA (for future dev)
-		# optionStand    : 1 to standardize of all variable (necessary if variable are not standardized already), 0 otherwise
+		# optionStand    : 1 to standardize of all variable (NECESSARY if variable are not standardized already), 0 otherwise
 		# optionImpute   : 1 to impute missing values in candidate covariate, o otherwise
 		# verbose        : 1 to display additional output, 0 otherwise
 
@@ -45,19 +46,19 @@ MC  <- function(DATAMAT,myOUTCOME,myPREDICTOR,myFIXCOV,listCOVARIATES,myTEST,opt
 		if(verbose == 1){ writeLines(paste("reduceSample = ",sum(reduceSample)))} 
 		
 		if(sum(reduceSample) > minTotSample){
-		DATAMAT					<- DATAMAT[reduceSample,]
+		DATAMAT				<- DATAMAT[reduceSample,]
 		missingCOV			<- apply(as.matrix(DATAMAT[,listCOVARIATES]),2,function(x) sum(!is.na(x)))
 		varianceCOV			<- apply(as.matrix(DATAMAT[,listCOVARIATES]),2,function(x) var(x, na.rm=TRUE))
-		listCOVARIATES	<- listCOVARIATES[missingCOV > minCovSample & varianceCOV > 0]
+		listCOVARIATES		<- listCOVARIATES[missingCOV > minCovSample & varianceCOV > 0]
 		missingFIX			<- apply(as.matrix(DATAMAT[,myFIXCOV]),2,function(x) sum(!is.na(x)))
 		varianceFIX			<- apply(as.matrix(DATAMAT[,myFIXCOV]),2,function(x) var(x, na.rm=TRUE))
-		myFIXCOV				<- myFIXCOV[missingFIX > minCovSample & varianceFIX > 0]
-		VARpred					<- NROW(unique(sort(rank(DATAMAT[,myPREDICTOR]))))
-		VARout					<- NROW(unique(sort(rank(DATAMAT[,myOUTCOME]))))
+		myFIXCOV			<- myFIXCOV[missingFIX > minCovSample & varianceFIX > 0]
+		VARpred				<- NROW(unique(sort(rank(DATAMAT[,myPREDICTOR]))))
+		VARout				<- NROW(unique(sort(rank(DATAMAT[,myOUTCOME]))))
 		smallSampPred		<- (NROW(DATAMAT) - max(table(DATAMAT[,myPREDICTOR])))
 		smallSampOut		<- (NROW(DATAMAT) - max(table(DATAMAT[,myOUTCOME])))
-		Nc							<- NROW(listCOVARIATES)
-		N								<- NROW(DATAMAT)
+		Nc					<- NROW(listCOVARIATES)
+		N					<- NROW(DATAMAT)
 
 		if(verbose == 1){ 
 				writeLines(paste("VARpred       = ",VARpred))
@@ -119,21 +120,16 @@ MC  <- function(DATAMAT,myOUTCOME,myPREDICTOR,myFIXCOV,listCOVARIATES,myTEST,opt
 					resMA[1:3]	= c(betaPY,sdPY,pvalPY)
 			}
 			
-			#Marginal effect of the predictor on the covariate
-			betaPC = pvalPC = 0
-			for(i in 1:Nc){
-		 			fit <- lm(COVAR[,i]~PREDI)
-		  		betaPC[i] = summary(fit)$coef[2,1];
-		  		pvalPC[i] = summary(fit)$coef[2,4];
-			}
-		
-			#Marginal effect of the covariate on the outcome
-			gammaCY = pvalCY = 0
-			for(i in 1:Nc){
-		  		fit 				<- lm(OUTCO~COVAR[,i])
-		  		gammaCY[i]	<- summary(fit)$coef[2,1];
-		  		pvalCY[i] 	<- summary(fit)$coef[2,4];
-			}
+    	    #Marginal effect of the predictor on the covariate
+	        c1		<- as.numeric(crossprod(COVAR, PREDI))
+        	betaPC	<- c1 / N
+        	pvalPC	<- pchisq(c1^2/N, df = 1, lower = FALSE)
+        
+        	#Marginal effect of the covariate on the outcome
+        	c2		<- as.numeric(crossprod(OUTCO, COVAR))
+        	gammaCY	<- c2 / N
+        	pvalCY	<- pchisq(c2^2/N, df = 1, lower = FALSE)
+
 			
 			gammaFX = 0
 			if(sum(!is.na(myFIXCOV))>0){
@@ -188,13 +184,13 @@ MC  <- function(DATAMAT,myOUTCOME,myPREDICTOR,myFIXCOV,listCOVARIATES,myTEST,opt
 			#joint estimates
 			if(sum(!is.na(myFIXCOV))>0){
 				corMat		<- cor(cbind(COVAR,FIXCOV), use="pairwise")
-				CC				<- corMat*N
-				BB				<- (t(cbind(COVAR,FIXCOV)) %*% OUTCO)
-				locFX			<- (Nc+1):(Nc+NCOL(FIXCOV))
+				CC			<- corMat*N
+				BB			<- (t(cbind(COVAR,FIXCOV)) %*% OUTCO)
+				locFX		<- (Nc+1):(Nc+NCOL(FIXCOV))
 			}else{
 				corMat		<- cor(COVAR, use="pairwise")
-				CC				<- corMat*N
-				BB				<- (t(COVAR) %*% OUTCO)
+				CC			<- corMat*N
+				BB			<- (t(COVAR) %*% OUTCO)
 			}
 			Nsel			<- NROW(myCOV)
 			NselP			<- Nsel+1
