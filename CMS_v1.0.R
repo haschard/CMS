@@ -206,13 +206,13 @@ MC  <- function(DATAMAT,myOUTCOME,myPREDICTOR,myFIXCOV,listCOVARIATES,myTEST,opt
 					weightJoint					<- rep(0,Nc)
 					weightJoint[myCOV] 			<- abs(jointBetaYC)
 				 	# interval around 0 ====================================
-				 	bound1					= as.numeric(lapply(w * (1-rsqY) / weightJoint^2, function(x) min(sdThres1,x)))
-					W1maxThres      		= as.numeric(rep(sqrt(1/N),Nc) *  bound1)
-					W1minThres      		= as.numeric(rep(sqrt(1/N),Nc) * -bound1)
+					bound1					= as.numeric(pmin(w * (1-as.vector(rsqY)) / weightJoint^2,sdThres1))
+					W1maxThres      		= as.numeric(sqrt(1/N) *  bound1)
+					W1minThres      		= - W1maxThres
 				 	# interval around the expected =========================
-					bound2					= as.numeric(lapply(w * (1-rsqY) / weightJoint^2, function(x) min(sdThres2,x)))
+					bound2					= as.numeric(pmin(w * (1-as.vector(rsqY)) / weightJoint^2,sdThres2))
 					W2maxThres      		= as.numeric(+ expSD * bound2)
-					W2minThres     			= as.numeric(- expSD * bound2)
+					W2minThres     			= - W2minThres
 					# final list of covariate ==============================
 					myCOV					= which(((betaPC > W1minThres & betaPC < W1maxThres) |  (expPC > W2minThres & expPC < W2maxThres)) & pvalPC > PcutoffBias)
 					Nsel					= NROW(myCOV)
